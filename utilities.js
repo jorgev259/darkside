@@ -4,10 +4,6 @@ var cooldown = {};
 var colors = ["pink","d-blue","purple","l-blue","green","red"];
 const Discord = require('discord.js');
 
-var moment = require("moment");
-var random = require("random-number-csprng");
-var fs = require("fs-extra");
-
 module.exports = {
 	async permCheck(message, commandName, client, db){
 		let dbPerms = await db.all(`SELECT item,type FROM perms WHERE command='${commandName}'`)

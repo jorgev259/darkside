@@ -6,7 +6,6 @@ async function startBot(){
 
 	const sqlite = require("sqlite");
 	let db = await sqlite.open('data/database.sqlite');
-	await db.run(`CREATE TABLE IF NOT EXISTS perms (type TEXT, item TEXT, command TEXT);`);
 
 	var util = require('./utilities.js');
 
