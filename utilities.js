@@ -45,24 +45,6 @@ module.exports = {
 		return false;
 	},
 
-	async userCheck(id,client,db){
-		let guild = client.guilds.get("289758148175200257");
-		if(!guild) return;
-		let member = await guild.members.fetch(id);
-		if(member.user.bot) return;
-
-		await db.run("INSERT OR IGNORE INTO exp (id,color,rank,lvl,exp,money,lastDaily,bg) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", [member.id, colors[await random(0,colors.length-1)], 0, 1, 0, 0, "Not Collected", "DEFAULT"])		
-		const userInfo = await db.get(`SELECT lvl,color,rank FROM exp WHERE id = ${member.id}`);
-		
-		let allRoles = ['436590073568559104', '441580169258598401', '436590072939282432', '435805052259794944', '435801059361947648', '435805052259794944', '435803522659778562' ];
-		var rankRoles = member.roles.filter(role => role.name.startsWith('['));
-		if (rankRoles.size>1) await member.roles.remove(rankRoles);
-			
-		allRoles.push(client.guilds.get("289758148175200257").roles.find(role=> role.name == `[${userInfo.lvl}]`).id, client.data.colorRoles[userInfo.color][userInfo.rank], client.data.groupRoles[userInfo.color]);
-		let roles = allRoles.filter(id => !member.roles.has(id))
-		await member.roles.add(roles,"User join");
-	},
-
 	react:function(msg){
 		reactions.forEach(reaction => {
 			msg.react(reaction);
@@ -92,7 +74,7 @@ module.exports = {
 	log:function(client,log){
 		console.log(log);
 		if(client != null && client.channels.size>0 && client.readyAt != null){			
-			client.channels.find(val => val.name === "bot-logs").send({embed:new Discord.MessageEmbed().setTimestamp().setDescription(log)});
+			client.channels.find(val => val.name === "error-logs").send({embed:new Discord.MessageEmbed().setTimestamp().setDescription(log)});
 		}
 	}
 }
