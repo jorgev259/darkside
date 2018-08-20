@@ -17,6 +17,7 @@ module.exports = {
 
             app.post('/darkside', function(req, res) {
                 console.log(req.body)
+                client.channels.find(c => c.name === 'error-logs').send('But JOOKKKKEEEEEEER')
             });
 
             app.get('/test', function(req,res){
@@ -25,7 +26,6 @@ module.exports = {
 
             app.listen(8080, function() {
                 console.log('Request API up and running, sir!');
-                client.channels.find(c => c.name === 'error-logs').send('But JOOKKKKEEEEEEER')
             });           
         }
     }
