@@ -19,7 +19,7 @@ module.exports = {
                 console.log(req.body)
             });
 
-            app.listen(4040, function() {
+            app.listen(8080, function() {
                 console.log('Request API up and running, sir!');
                 client.channels.find(c => c.name === 'error-logs').send('But JOOKKKKEEEEEEER')
             });           
