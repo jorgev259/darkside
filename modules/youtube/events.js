@@ -1,6 +1,8 @@
 var express = require('express');
 var app = express();
-app.use(express.bodyParser());
+
+const bodyParser = require('body-parser');
+app.use(bodyParser);
 
 module.exports = {
     events: {
