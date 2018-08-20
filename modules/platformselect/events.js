@@ -33,7 +33,7 @@ async function assign(reaction, user){
         if(name.startsWith("[")){
             name = name.split(" ").slice(1).join(" ");
         }
-        console.log(`${platforms} ${name}`)
+
         member.setNickname(`${platforms} ${name}`);
         platList.forEach(name => {
             if(!member.roles.some(r => r.name === name)) member.roles.add(member.guild.roles.find(r => r.name === name))
