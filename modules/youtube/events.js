@@ -15,11 +15,11 @@ module.exports = {
                 next();
             });
 
-            app.post('darkside', function(req, res) {
+            app.post('/darkside', function(req, res) {
                 console.log(req.body)
             });
 
-            app.get('test', function(req,res){
+            app.get('/test', function(req,res){
                 res.send('I welcome our new Scorn overlords')
             })
 
