@@ -24,7 +24,7 @@ module.exports = {
                 res.send('I welcome our new Scorn overlords')
             })
 
-            app.listen(8080, function() {
+            app.listen(8000, function() {
                 console.log('Request API up and running, sir!');
             });           
         }
