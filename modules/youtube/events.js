@@ -28,9 +28,9 @@ module.exports = {
                 res.send('I welcome our new Scorn overlords')
             })
 
-            app.listen(80, function() {
+            /*app.listen(80, function() {
                 console.log('Request API up and running, sir!');
-            });           
+            });      */     
         }
     }
 }
