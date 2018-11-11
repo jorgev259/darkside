@@ -4,7 +4,7 @@ const { log } = require('../../utilities.js')
 module.exports = {
   commands: {
     'twitteradd': {
-      desc: 'Adds a twitter account to a designated channel for automatic posting. Usage: >twitter add [username] [channel]',
+      desc: 'Adds a twitter account to a designated channel for automatic posting. Usage: >twitteradd [username] [channel]',
       async execute (client, msg, param, db) {
         if (!param[2]) return msg.channel.send('Usage: twitter add username channel')
         let username = param[1]
