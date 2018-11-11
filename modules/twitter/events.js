@@ -32,7 +32,7 @@ module.exports = {
 
             Promise.all(msgs).catch(err => {
               console.log(err)
-              client.channels.find(c => c.name === 'tweet-approval').send(`A message couldnt be send in some channels. URL: ${url}`)
+              client.channels.find(c => c.name === 'tweet-approval-log').send(`A message couldnt be send in some channels. URL: ${url}`)
             })
             break
 
@@ -41,10 +41,10 @@ module.exports = {
             break
         }
         db.prepare('DELETE FROM tweets WHERE id=?').run(reaction.message.id)
-        reaction.message.reactions.removeAll()
 
         embed.setTimestamp()
-        reaction.message.edit(embed)
+        client.channels.find(c => c.name === 'tweet-approval-log').send(embed)
+        reaction.message.delete()
       }
     }
   }
