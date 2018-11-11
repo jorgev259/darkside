@@ -43,7 +43,7 @@ module.exports = {
         db.prepare('DELETE FROM tweets WHERE id=?').run(reaction.message.id)
         reaction.message.reactions.removeAll()
 
-        embed.setTimestamp().setImage(embed.image.url)
+        embed.setTimestamp()
         reaction.message.edit(embed)
       }
     }

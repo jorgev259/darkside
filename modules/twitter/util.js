@@ -18,51 +18,58 @@ module.exports = {
     ids.forEach(id => { streams[id] = stream })
 
     stream.on('tweet', async function (tweet) {
-      let embed = new MessageEmbed()
-        .setAuthor(`${tweet.user.name} | ${tweet.user.screen_name}`, tweet.user.profile_image_url)
-        .setThumbnail()
-        .setColor(tweet.user.profile_background_color)
-        .setTimestamp()
+      if (Object.keys(streams).includes(tweet.user.id_str) || tweet.retweeted) {
+        let twit = tweet
+        if (tweet.retweeted_status) twit = tweet.retweeted_status
 
-      let textArray = tweet.text.split(' ')
-      let url = `https://twitter.com/${tweet.user.screen_name}/status/${tweet.id_str}/`
+        let embed = new MessageEmbed()
+          .setAuthor(`${twit.user.name} | ${twit.user.screen_name}`, twit.user.profile_image_url)
+          .setThumbnail()
+          .setColor(twit.user.profile_background_color)
+          .setTimestamp()
 
-      embed.addField('Tweet', textArray.join(' '))
-      embed.addField('URL', url)
+        let textArray = twit.text.split(' ')
+        let url = `https://twitter.com/${twit.user.screen_name}/status/${twit.id_str}/`
 
-      if (tweet.extended_entities) {
-        let media = tweet.extended_entities.media.filter(e => e.type === 'photo').map(e => loadImage(e.media_url))
-        let array = await Promise.all(media)
-        let widthTotal = 0
-        let x = 0
+        embed.addField('Tweet', textArray.join(' '))
+        embed.addField('URL', url)
+        embed.addField('Channel', 'Test channel')
+        if (tweet.retweeted_status) embed.addField('Retweeted by', tweet.user.screen_name)
 
-        array.sort((a, b) => {
-          return a.height > b.height ? -1 : b.height > a.height ? 1 : 0
-        })
+        if (twit.extended_entities && twit.extended_entities.media) {
+          let media = twit.extended_entities.media.filter(e => e.type === 'photo').map(e => loadImage(e.media_url))
+          let array = await Promise.all(media)
+          let widthTotal = 0
+          let x = 0
 
-        array.forEach(e => { widthTotal += e.width })
-        const canvas = createCanvas(widthTotal, array[0].height)
-        let ctx = canvas.getContext('2d')
-
-        array.forEach(e => {
-          ctx.drawImage(e, x, 0)
-          x += e.width
-        })
-
-        embed.attachFiles([{ name: 'images.png', attachment: canvas.toBuffer() }])
-          .setImage('attachment://images.png')
-      }
-
-      let stmt = db.prepare('SELECT channel FROM twitter')
-
-      for (const row of stmt.iterate()) {
-        let newEmbed = embed.addField('Channel', `#${row.channel}`)
-
-        client.channels.find(c => c.name === 'tweet-approval').send(newEmbed).then(m => {
-          Promise.all([m.react('✅'), m.react('❎')]).then(reacts => {
-            db.prepare('INSERT INTO tweets (id,url,channel) VALUES (?,?,?)').run(m.id, url, row.channel)
+          array.sort((a, b) => {
+            return a.height > b.height ? -1 : b.height > a.height ? 1 : 0
           })
-        })
+
+          array.forEach(e => { widthTotal += e.width })
+          const canvas = createCanvas(widthTotal, array[0].height)
+          let ctx = canvas.getContext('2d')
+
+          array.forEach(e => {
+            ctx.drawImage(e, x, 0)
+            x += e.width
+          })
+
+          embed.attachFiles([{ name: 'images.png', attachment: canvas.toBuffer() }])
+            .setImage('attachment://images.png')
+        }
+
+        let stmt = db.prepare('SELECT channel FROM twitter WHERE id=?')
+
+        for (const row of stmt.iterate(tweet.user.id_str)) {
+          embed.fields[2].value = `#${row.channel}`
+
+          client.channels.find(c => c.name === 'tweet-approval').send(embed).then(m => {
+            Promise.all([m.react('✅'), m.react('❎')]).then(reacts => {
+              db.prepare('INSERT INTO tweets (id,url,channel) VALUES (?,?,?)').run(m.id, url, row.channel)
+            })
+          })
+        }
       }
     })
     stream.on('error', function (err) {
