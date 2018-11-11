@@ -65,8 +65,10 @@ module.exports = {
           embed.fields[2].value = `#${row.channel}`
 
           client.channels.find(c => c.name === 'tweet-approval').send(embed).then(m => {
-            Promise.all([m.react('✅'), m.react('❎')]).then(reacts => {
-              db.prepare('INSERT INTO tweets (id,url,channel) VALUES (?,?,?)').run(m.id, url, row.channel)
+            m.react('✅').then(() => {
+              m.react('❎').then(() => {
+                db.prepare('INSERT INTO tweets (id,url,channel) VALUES (?,?,?)').run(m.id, url, row.channel)
+              })
             })
           })
         }
