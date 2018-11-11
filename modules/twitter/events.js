@@ -12,10 +12,9 @@ module.exports = {
   events: {
     async ready (client, db) {
       let ids = db.prepare('SELECT id FROM twitter').all().map(r => r.id)
-      
+
       await client.channels.find(c => c.name === 'tweet-approval').messages.fetch()
-      client.channels.find(c => c.name === 'tweet-approval').messages.forEach(m => m.delete())
-      stream(client, db, ids)
+      if (ids.length > 0) stream(client, db, ids)
     },
 
     async messageReactionAdd (client, db, reaction, user) {
