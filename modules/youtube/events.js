@@ -1,14 +1,14 @@
-var express = require('express');
-var app = express();
+var express = require('express')
+var app = express()
 
-const bodyParser = require('body-parser');
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
+const bodyParser = require('body-parser')
+app.use(bodyParser.urlencoded({ extended: true }))
+app.use(bodyParser.json())
 
 module.exports = {
-    events: {
-        async ready(client, db){
-            app.get('/logout', function(req, res) {
+  events: {
+    async ready (client, db) {
+      /* app.get('/logout', function(req, res) {
                 req.logout();
                 res.redirect('/login');
             });
@@ -28,9 +28,9 @@ module.exports = {
                 res.send('I welcome our new Scorn overlords')
             })
 
-            /*app.listen(80, function() {
+            app.listen(80, function() {
                 console.log('Request API up and running, sir!');
-            });      */     
-        }
+            });      */
     }
+  }
 }

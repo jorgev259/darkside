@@ -1,81 +1,62 @@
-var reactionNumbers = ["1⃣","2⃣","3⃣","4⃣","5⃣","6⃣","7⃣","8⃣","9⃣", "🔟"];
-var reactions = ["390223211662540800","390223209930424321","390223211637243905","390223211616534577","390223211456888835","390223210240540683"];
-var cooldown = {};
-var colors = ["pink","d-blue","purple","l-blue","green","red"];
-const Discord = require('discord.js');
+// var reactions = ['390223211662540800', '390223209930424321', '390223211637243905', '390223211616534577', '390223211456888835', '390223210240540683']
+var colors = ['pink', 'd-blue', 'purple', 'l-blue', 'green', 'red', 'yellow']
+const Discord = require('discord.js')
+
+// var random = require('random-number-csprng')
+var fs = require('fs-extra')
 
 module.exports = {
-	async permCheck(message, commandName, client, db){
-		let dbPerms = await db.all(`SELECT item,type FROM perms WHERE command='${commandName}'`)
-		let perms = {channel: [], role:[], user:[]};
-		dbPerms.forEach(element => {
-			perms[element.type].push(element.item);
-		})
-		if(dbPerms.length == 0 || message.member.roles.some(r=>r.name=="🍬") ||  message.member.roles.some(r=>r.name=="🍬 Master Developer")) return true;
-		var allowedChannel = true;
-		var allowed = false;
+  async permCheck (message, commandName, client, db) {
+    let dbPerms = db.prepare('SELECT type,perm FROM perms WHERE command=? AND guild=?').all(commandName, message.guild.id)
+    if (dbPerms.length === 0) return true
+    let perms = { role: [], user: [], channel: [] }
+    dbPerms.forEach(element => {
+      perms[element.type].push(element.perm)
+    })
 
-		if(perms.channel.length>0){
-			allowedChannel = false;
-			if(perms.channel.includes(message.channel.name)) allowedChannel = true;
-		}
-		if(allowedChannel){
-			if(perms.role.length==0 && perms.user.length==0){return true};
+    if (perms.channel.length === 0 || perms.channel.includes(message.channel.name)) {
+      if (perms.role.length > 0 && message.member.roles.some(r => perms.role.includes(r.name))) return true
 
-			if(perms.role.length>0){
-				for(var i=0;i<perms.role.length;i++){
-					var role = message.member.guild.roles.find(role=> role.name == perms.role[i]);
-					if(role != null && message.member.roles.has(role.id)){
-						return true;
-						i=perms.role.length;
-					}
-				}
-			}
+      if (perms.user.length > 0 && perms.user.includes(message.author.id)) return true
+    }
 
-			if(!allowed && perms.user.length>0){
-				for(var i=0;i<perms.user.length;i++){
-					if(perms.user[i] == message.author.id){
-						return true;
-						i=perms.user.length;
-					}
-				}
-			}
+    return false
+  },
 
-		}
-		return false;
-	},
+  async userCheck (id, client, db) {
+    let guild = client.guilds.get('289758148175200257')
+    if (!guild) return
+    let member = await guild.members.fetch(id)
+    if (member.user.bot) return
 
-	react:function(msg){
-		reactions.forEach(reaction => {
-			msg.react(reaction);
-		})
-	},
+    await db.run('INSERT OR IGNORE INTO exp (id,color,rank,lvl,exp,money,lastDaily,bg,prestige) VALUES (?, ?, 0, 1, 0, 0, ?, ?, 0)', [member.id, colors[await random(0, colors.length - 1)], 'Not Collected', 'DEFAULT'])
+    const userInfo = await db.get(`SELECT lvl,color,rank FROM exp WHERE id = ${member.id}`)
 
-	/*findEmoji:function(emoji){
-        for(var i=0;i<10;i++){
-            if(reactions[i]==emoji){
-                return i+1;
-            }
-        }
-    },*/
-	async checkData(client, name, info){
-        if(!(await fs.pathExists(`data/${name}.json`))) {
-            // file does not exist
-            client.data[name] = info;
-            fs.writeFileSync(`data/${name}.json`, JSON.stringify(client.data[name], null, 4));
-        }
-	},
+    let allRoles = ['436590073568559104', '441580169258598401', '436590072939282432', '435805052259794944', '435801059361947648', '435805052259794944', '435803522659778562']
+    var rankRoles = member.roles.filter(role => role.name.startsWith('[') && role.name.endsWith(']'))
+    if (rankRoles.size > 1) await member.roles.remove(rankRoles)
 
-	async save(data,name){
-		await fs.writeFile("data/" + name + ".json", JSON.stringify(data, null, 4));
-	},
+    allRoles.push(client.guilds.get('289758148175200257').roles.find(role => role.name === `[${userInfo.lvl}]`).id, client.data.colorRoles[userInfo.color][userInfo.rank], client.data.groupRoles[userInfo.color])
+    let roles = allRoles.filter(id => !member.roles.has(id))
+    await member.roles.add(roles, 'User join')
+  },
 
+  async checkData (client, name, info) {
+    if (!(await fs.pathExists(`data/${name}.json`))) {
+      // file does not exist
+      client.data[name] = info
+      fs.writeFileSync(`data/${name}.json`, JSON.stringify(client.data[name], null, 4))
+    }
+  },
 
-	log:function(client,log){
-		console.log(log);
-		if(client != null && client.channels.size>0 && client.readyAt != null){			
-			client.channels.find(val => val.name === "error-logs").send({embed:new Discord.MessageEmbed().setTimestamp().setDescription(log)});
-		}
-	}
+  async save (data, name) {
+    await fs.writeFile('data/' + name + '.json', JSON.stringify(data, null, 4))
+  },
+
+  log: function (client, log) {
+    console.log(log)
+    if (client != null && client.channels.size > 0 && client.readyAt != null) {
+      client.channels.get('478591298241036328').send({ embed: new Discord.MessageEmbed().setTimestamp().setDescription(log) })
+    }
+  }
 }
-
