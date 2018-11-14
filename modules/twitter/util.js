@@ -47,16 +47,18 @@ module.exports = {
           })
 
           array.forEach(e => { widthTotal += e.width })
-          const canvas = createCanvas(widthTotal, array[0].height)
-          let ctx = canvas.getContext('2d')
+          if (array[0] != undefined) {
+            const canvas = createCanvas(widthTotal, array[0].height)
+            let ctx = canvas.getContext('2d')
 
-          array.forEach(e => {
-            ctx.drawImage(e, x, 0)
-            x += e.width
-          })
+            array.forEach(e => {
+              ctx.drawImage(e, x, 0)
+              x += e.width
+            })
 
-          embed.attachFiles([{ name: 'images.png', attachment: canvas.toBuffer() }])
-            .setImage('attachment://images.png')
+            embed.attachFiles([{ name: 'images.png', attachment: canvas.toBuffer() }])
+              .setImage('attachment://images.png')
+          }
         }
 
         let stmt = db.prepare('SELECT channel FROM twitter WHERE id=?')
